@@ -9,7 +9,6 @@ import { goalSchema, postTextSchema } from '../validation/creator.validation.js'
 
 const router = Router();
 
-// Seguridad global: solo creadores autenticados
 router.use(isAuth, checkRole(['creator']));
 
 router.put('/profile',
@@ -29,5 +28,15 @@ router.post('/posts',
 );
 
 router.get('/posts', PostController.getPosts);
+
+router.get('/reports', async (req, res, next) => {
+    try {
+        const { startDate, endDate } = req.query;
+        const report = await useCases.getCreatorReports.execute(req.user.id, startDate, endDate);
+        return res.status(200).json(report);
+    } catch (error) {
+        next(error);
+    }
+});
 
 export default router;
