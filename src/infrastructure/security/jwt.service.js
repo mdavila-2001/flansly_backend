@@ -1,13 +1,13 @@
-// src/infrastructure/security/jwt.service.js
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import { TokenServicePort } from '../../application/ports/token.service.port.js';
 
 dotenv.config();
 
-export class JwtService {
-    static #secret = process.env.JWT_SECRET;
+export class JwtService extends TokenServicePort {
+    #secret = process.env.JWT_SECRET;
 
-    static generateToken(payload, expiresIn = '24h') {
+    generateToken(payload, expiresIn = '24h') {
         if (!this.#secret) {
             throw new Error('CRITICAL ERROR: JWT_SECRET no está definido en el entorno.');
         }
@@ -15,7 +15,11 @@ export class JwtService {
         return jwt.sign(payload, this.#secret, { expiresIn });
     }
 
-    static verifyToken(token) {
+    verifyToken(token) {
+        if (!this.#secret) {
+            throw new Error('CRITICAL ERROR: JWT_SECRET no está definido en el entorno.');
+        }
+
         try {
             return jwt.verify(token, this.#secret);
         } catch (error) {

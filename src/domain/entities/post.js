@@ -1,4 +1,4 @@
-import { BusinessRuleError } from '../errors/BusinessRuleError.js';
+import { BusinessRuleError } from '../errors/business_rule.error.js';
 
 export class Post {
     constructor({
@@ -6,6 +6,7 @@ export class Post {
         creatorId,
         contentText = null,
         imageUrl = null,
+        comments = [],
         createdAt,
         updatedAt,
         deletedAt
@@ -14,6 +15,7 @@ export class Post {
         this.creatorId = creatorId;
         this.contentText = contentText;
         this.imageUrl = imageUrl;
+        this.comments = comments;
         this.createdAt = createdAt || new Date();
         this.updatedAt = updatedAt || new Date();
         this.deletedAt = deletedAt || null;

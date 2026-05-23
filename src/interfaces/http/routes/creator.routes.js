@@ -1,14 +1,15 @@
 import { Router } from 'express';
-import { CreatorController } from '../controllers/CreatorController.js';
+import { CreatorController } from '../controllers/creator.controller.js';
+import { PostController } from '../controllers/post.controller.js';
 import { isAuth } from '../middleware/is_auth.js';
 import { checkRole } from '../middleware/check_role.js';
 import { validateSchema } from '../middleware/validate.js';
 import { uploadImage } from '../middleware/upload_image.js';
 import { goalSchema, postTextSchema } from '../validation/creator.validation.js';
+import { reportsQuerySchema } from '../validation/reports.validation.js';
 
 const router = Router();
 
-// Seguridad global: solo creadores autenticados
 router.use(isAuth, checkRole(['creator']));
 
 router.put('/profile',
@@ -24,9 +25,14 @@ router.put('/goal',
 router.post('/posts',
     uploadImage.single('image'),
     validateSchema(postTextSchema),
-    CreatorController.createPost
+    PostController.createPost
 );
 
-router.get('/posts', CreatorController.getPosts);
+router.get('/posts', PostController.getPosts);
+
+router.get('/reports',
+    validateSchema(reportsQuerySchema, 'query'),
+    CreatorController.getReports
+);
 
 export default router;

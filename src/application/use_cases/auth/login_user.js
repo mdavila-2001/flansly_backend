@@ -1,10 +1,10 @@
-import { BcryptService } from '../../../infrastructure/security/bcrypt.service.js';
-import { JwtService } from '../../../infrastructure/security/jwt.service.js';
-import { UnauthorizedError } from '../../errors/UnauthorizedError.js';
+import { UnauthorizedError } from '../../errors/unauthorized.error.js';
 
 export class LoginUser {
-    constructor(userRepository) {
+    constructor(userRepository, hashService, tokenService) {
         this.userRepository = userRepository;
+        this.hashService = hashService;
+        this.tokenService = tokenService;
     }
 
     async execute({ identity, password }) {
@@ -17,12 +17,12 @@ export class LoginUser {
             throw new UnauthorizedError('Credenciales de acceso incorrectas');
         }
 
-        const passwordMatch = await BcryptService.comparePassword(password, user.password);
+        const passwordMatch = await this.hashService.compare(password, user.password);
         if (!passwordMatch) {
             throw new UnauthorizedError('Credenciales de acceso incorrectas');
         }
 
-        const token = JwtService.generateToken({
+        const token = this.tokenService.generateToken({
             id: user.id,
             username: user.username,
             role: user.role
