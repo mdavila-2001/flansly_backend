@@ -5,7 +5,7 @@ export const isAuth = async (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
 
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        if (!authHeader?.startsWith('Bearer ')) {
             throw new UnauthorizedError('Token de acceso ausente, inválido o expirado');
         }
 
@@ -20,6 +20,7 @@ export const isAuth = async (req, res, next) => {
 
         next();
     } catch (error) {
+        console.error(error);
         next(new UnauthorizedError('Token de acceso ausente, inválido o expirado'));
     }
 };
