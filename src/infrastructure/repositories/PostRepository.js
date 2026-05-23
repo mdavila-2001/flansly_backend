@@ -22,6 +22,17 @@ export class PostRepository {
             order: [['createdAt', 'DESC']]
         });
 
-        return records.map((record) => record.toJSON());
+        return records.map((record) => {
+            const raw = record.toJSON();
+            const postEntity = new Post({
+                id: raw.id,
+                creatorId: raw.creatorId,
+                contentText: raw.contentText,
+                imageUrl: raw.imageUrl,
+                createdAt: raw.createdAt
+            });
+            postEntity.comments = raw.comments || [];
+            return postEntity;
+        });
     }
 }

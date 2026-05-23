@@ -16,7 +16,12 @@ export class UpdateCreatorProfile {
             userEntity.displayName = displayName;
         }
 
-        userEntity.updateProfileImages(profileImageUrl, bannerImageUrl);
+        if (profileImageUrl || bannerImageUrl) {
+            userEntity.updateProfileImages(
+                profileImageUrl || userEntity.profileImageUrl,
+                bannerImageUrl || userEntity.bannerImageUrl
+            );
+        }
 
         await this.userRepository.update(userEntity);
 
