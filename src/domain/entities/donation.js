@@ -8,9 +8,11 @@ export class Donation {
         supportTypeId = 1,
         quantity, 
         totalAmount, 
+        follower = null,
         createdAt 
     }) {
         this.id = id;
+        this.follower = follower;
         this.followerId = followerId;
         this.creatorId = creatorId;
         this.supportTypeId = supportTypeId;

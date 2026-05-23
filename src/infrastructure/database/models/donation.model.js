@@ -48,5 +48,11 @@ DonationModel.init({
     sequelize,
     modelName: 'Donation',
     tableName: 'donations',
-    updatedAt: false
+    updatedAt: false,
+    indexes: [
+        {
+            name: 'idx_donations_creator_created_at',
+            fields: ['creator_id', 'created_at']
+        }
+    ]
 });

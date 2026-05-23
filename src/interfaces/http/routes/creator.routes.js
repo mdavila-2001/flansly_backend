@@ -6,6 +6,7 @@ import { checkRole } from '../middleware/check_role.js';
 import { validateSchema } from '../middleware/validate.js';
 import { uploadImage } from '../middleware/upload_image.js';
 import { goalSchema, postTextSchema } from '../validation/creator.validation.js';
+import { reportsQuerySchema } from '../validation/reports.validation.js';
 
 const router = Router();
 
@@ -29,14 +30,9 @@ router.post('/posts',
 
 router.get('/posts', PostController.getPosts);
 
-router.get('/reports', async (req, res, next) => {
-    try {
-        const { startDate, endDate } = req.query;
-        const report = await useCases.getCreatorReports.execute(req.user.id, startDate, endDate);
-        return res.status(200).json(report);
-    } catch (error) {
-        next(error);
-    }
-});
+router.get('/reports',
+    validateSchema(reportsQuerySchema, 'query'),
+    CreatorController.getReports
+);
 
 export default router;

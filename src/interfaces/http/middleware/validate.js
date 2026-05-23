@@ -1,6 +1,8 @@
-export const validateSchema = (schema) => {
+export const validateSchema = (schema, source = 'body') => {
     return (req, res, next) => {
-        const { error, value } = schema.validate(req.body, {
+        const data = source === 'query' ? req.query : req.body;
+        
+        const { error, value } = schema.validate(data, {
             abortEarly: false,
             stripUnknown: true
         });
@@ -10,7 +12,12 @@ export const validateSchema = (schema) => {
             return res.status(400).json({ error: messages });
         }
 
-        req.body = value;
+        if (source === 'query') {
+            req.query = value;
+        } else {
+            req.body = value;
+        }
+        
         next();
     };
 };

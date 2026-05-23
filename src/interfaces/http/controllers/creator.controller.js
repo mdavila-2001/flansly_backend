@@ -42,4 +42,15 @@ export class CreatorController {
             next(error);
         }
     }
+
+    static async getReports(req, res, next) {
+        try {
+            const { start_date, end_date } = req.query;
+            const report = await useCases.getCreatorReports.execute(req.user.id, start_date, end_date);
+
+            return res.status(200).json(report);
+        } catch (error) {
+            next(error);
+        }
+    }
 }

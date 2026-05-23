@@ -1,3 +1,4 @@
+import { Op } from 'sequelize';
 import { sequelize, SupportTypeModel, DonationModel, FollowModel, FavoriteModel, PostModel, UserModel, CommentModel } from '../database/models/index.js';
 import { Donation } from '../../domain/entities/donation.js';
 import { Follow } from '../../domain/entities/follow.js';
@@ -7,7 +8,6 @@ import { FollowerRepositoryPort } from '../../application/ports/follower.reposit
 
 export class FollowerRepository extends FollowerRepositoryPort {
     async findSupportTypePriceById(id) {
-        // Robusto: Aseguramos la existencia del tipo de soporte (Flan id: 1, precio: 10) dinámicamente
         if (id === 1) {
             const [supportType] = await SupportTypeModel.findOrCreate({
                 where: { id: 1 },
@@ -147,6 +147,48 @@ export class FollowerRepository extends FollowerRepositoryPort {
             // Adjuntar el creador para facilitar el despliegue en la interfaz HTTP
             postEntity.creator = raw.creator;
             return postEntity;
+        });
+    }
+
+    async getDonationsByCreatorAndDates(creatorId, startDate, endDate) {
+        const where = { creatorId };
+
+        if (startDate || endDate) {
+            where.createdAt = {};
+            if (startDate) {
+                where.createdAt[Op.gte] = new Date(startDate);
+            }
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                where.createdAt[Op.lte] = end;
+            }
+        }
+
+        const records = await DonationModel.findAll({
+            where,
+            include: [
+                {
+                    model: UserModel,
+                    as: 'follower',
+                    attributes: ['id', 'username', 'displayName']
+                }
+            ],
+            order: [['createdAt', 'DESC']]
+        });
+
+        return records.map((record) => {
+            const raw = record.toJSON();
+            return new Donation({
+                id: raw.id,
+                followerId: raw.followerId,
+                creatorId: raw.creatorId,
+                supportTypeId: raw.supportTypeId,
+                quantity: raw.quantity,
+                totalAmount: Number(raw.totalAmount),
+                follower: raw.follower,
+                createdAt: raw.createdAt
+            });
         });
     }
 }
