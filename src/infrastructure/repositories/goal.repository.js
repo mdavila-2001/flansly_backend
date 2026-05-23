@@ -1,7 +1,8 @@
 import { SupportGoalModel } from '../database/models/index.js';
+import { GoalRepositoryPort } from '../../application/ports/goal.repository.port.js';
 
-export class GoalRepository {
-    async saveGoal(creatorId, title, description) {
+export class GoalRepository extends GoalRepositoryPort {
+    async upsert(creatorId, title, description) {
         const existing = await SupportGoalModel.findOne({ where: { creatorId } });
 
         if (existing) {

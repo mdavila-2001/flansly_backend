@@ -1,5 +1,5 @@
-import { JwtService } from '../../../infrastructure/security/jwt.service.js';
-import { UnauthorizedError } from '../../../application/errors/UnauthorizedError.js';
+import { tokenService } from '../../../infrastructure/container.js';
+import { UnauthorizedError } from '../../../application/errors/unauthorized.error.js';
 
 export const isAuth = async (req, res, next) => {
     try {
@@ -10,7 +10,7 @@ export const isAuth = async (req, res, next) => {
         }
 
         const token = authHeader.split(' ')[1];
-        const decoded = JwtService.verifyToken(token);
+        const decoded = tokenService.verifyToken(token);
 
         req.user = {
             id: decoded.id,

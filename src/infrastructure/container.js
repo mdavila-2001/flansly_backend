@@ -1,0 +1,48 @@
+import { UserRepository } from './repositories/user.repository.js';
+import { PostRepository } from './repositories/post.repository.js';
+import { GoalRepository } from './repositories/goal.repository.js';
+import { FollowerRepository } from './repositories/follower.repository.js';
+import { CommentRepository } from './repositories/comment.repository.js';
+import { BcryptService } from './security/bcrypt.service.js';
+import { JwtService } from './security/jwt.service.js';
+
+// Use Cases
+import { RegisterUser } from '../application/use_cases/auth/register_user.js';
+import { LoginUser } from '../application/use_cases/auth/login_user.js';
+import { CreatePost } from '../application/use_cases/creator/create_post.js';
+import { GetCreatorPosts } from '../application/use_cases/creator/get_creator_posts.js';
+import { UpdateCreatorProfile } from '../application/use_cases/creator/update_creator_profile.js';
+import { UpdateSupportGoal } from '../application/use_cases/creator/update_support_goal.js';
+
+// Follower Use Cases
+import { DonateFlans } from '../application/use_cases/follower/donate_flans.js';
+import { GetFollowerFeed } from '../application/use_cases/follower/get_follower_feed.js';
+import { CreateFollowerComment } from '../application/use_cases/follower/create_follower_comment.js';
+import { ToggleFavoriteCreator } from '../application/use_cases/follower/toggle_favorite_creator.js';
+
+// Instancias de infraestructura
+const userRepository = new UserRepository();
+const postRepository = new PostRepository();
+const goalRepository = new GoalRepository();
+const followerRepository = new FollowerRepository();
+const commentRepository = new CommentRepository();
+const hashService = new BcryptService();
+const tokenService = new JwtService();
+
+// Use cases pre-configurados
+export const useCases = Object.freeze({
+    registerUser: new RegisterUser(userRepository, hashService),
+    loginUser: new LoginUser(userRepository, hashService, tokenService),
+    createPost: new CreatePost(postRepository),
+    getCreatorPosts: new GetCreatorPosts(postRepository),
+    updateCreatorProfile: new UpdateCreatorProfile(userRepository),
+    updateSupportGoal: new UpdateSupportGoal(goalRepository),
+
+    // Follower Use Cases
+    donateFlans: new DonateFlans(followerRepository, userRepository),
+    getFollowerFeed: new GetFollowerFeed(followerRepository),
+    createFollowerComment: new CreateFollowerComment(followerRepository, postRepository, commentRepository),
+    toggleFavoriteCreator: new ToggleFavoriteCreator(followerRepository, userRepository),
+});
+
+export { tokenService };

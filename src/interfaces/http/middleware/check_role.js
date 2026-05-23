@@ -1,4 +1,4 @@
-import { ForbiddenError } from '../../../application/errors/ForbiddenError.js';
+import { ForbiddenError } from '../../../application/errors/forbidden.error.js';
 
 export const checkRole = (allowedRoles) => {
     return (req, res, next) => {

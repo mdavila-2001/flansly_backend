@@ -4,6 +4,6 @@ export class UpdateSupportGoal {
     }
 
     async execute(creatorId, title, description) {
-        return await this.goalRepository.saveGoal(creatorId, title, description);
+        return await this.goalRepository.upsert(creatorId, title, description);
     }
 }

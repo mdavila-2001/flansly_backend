@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { CreatorController } from '../controllers/CreatorController.js';
+import { CreatorController } from '../controllers/creator.controller.js';
+import { PostController } from '../controllers/post.controller.js';
 import { isAuth } from '../middleware/is_auth.js';
 import { checkRole } from '../middleware/check_role.js';
 import { validateSchema } from '../middleware/validate.js';
@@ -24,9 +25,9 @@ router.put('/goal',
 router.post('/posts',
     uploadImage.single('image'),
     validateSchema(postTextSchema),
-    CreatorController.createPost
+    PostController.createPost
 );
 
-router.get('/posts', CreatorController.getPosts);
+router.get('/posts', PostController.getPosts);
 
 export default router;

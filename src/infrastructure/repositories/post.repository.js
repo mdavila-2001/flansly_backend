@@ -1,7 +1,8 @@
 import { PostModel, CommentModel } from '../database/models/index.js';
 import { Post } from '../../domain/entities/post.js';
+import { PostRepositoryPort } from '../../application/ports/post.repository.port.js';
 
-export class PostRepository {
+export class PostRepository extends PostRepositoryPort {
     async save(postEntity) {
         const created = await PostModel.create({
             creatorId: postEntity.creatorId,
@@ -24,15 +25,20 @@ export class PostRepository {
 
         return records.map((record) => {
             const raw = record.toJSON();
-            const postEntity = new Post({
+            return new Post({
                 id: raw.id,
                 creatorId: raw.creatorId,
                 contentText: raw.contentText,
                 imageUrl: raw.imageUrl,
+                comments: raw.comments || [],
                 createdAt: raw.createdAt
             });
-            postEntity.comments = raw.comments || [];
-            return postEntity;
         });
+    }
+
+    async findById(id) {
+        const record = await PostModel.findByPk(id);
+        if (!record) return null;
+        return new Post(record.toJSON());
     }
 }

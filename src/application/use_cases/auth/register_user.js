@@ -1,10 +1,10 @@
 import { User } from '../../../domain/entities/user.js';
-import { BcryptService } from '../../../infrastructure/security/bcrypt.service.js';
-import { BusinessRuleError } from '../../../domain/errors/BusinessRuleError.js';
+import { BusinessRuleError } from '../../../domain/errors/business_rule.error.js';
 
 export class RegisterUser {
-    constructor(userRepository) {
+    constructor(userRepository, hashService) {
         this.userRepository = userRepository;
+        this.hashService = hashService;
     }
 
     async execute(data) {
@@ -18,7 +18,7 @@ export class RegisterUser {
             throw new BusinessRuleError('El nombre de usuario o correo electrónico ya se encuentra registrado');
         }
 
-        const hashedPassword = await BcryptService.hashPassword(data.password);
+        const hashedPassword = await this.hashService.hash(data.password);
 
         const userEntity = new User({
             username: data.username,

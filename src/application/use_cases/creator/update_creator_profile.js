@@ -1,4 +1,4 @@
-import { NotFoundError } from '../../errors/NotFoundError.js';
+import { NotFoundError } from '../../errors/not_found.error.js';
 
 export class UpdateCreatorProfile {
     constructor(userRepository) {

@@ -1,4 +1,4 @@
-import { BusinessRuleError } from '../errors/BusinessRuleError.js';
+import { BusinessRuleError } from '../errors/business_rule.error.js';
 
 export class Donation {
     constructor({ 
