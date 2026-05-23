@@ -3,7 +3,7 @@ import { sequelize } from '../db.js';
 
 export class UserModel extends Model {
     static associate(models) {
-        this.hasMany(models.Post, {
+        this.hasMany(models.PostModel, {
             foreignKey: 'creatorId',
             as: 'posts'
         });

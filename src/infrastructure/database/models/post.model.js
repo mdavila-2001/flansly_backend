@@ -7,6 +7,10 @@ export class PostModel extends Model {
             foreignKey: 'creatorId',
             as: 'creator'
         });
+        this.hasMany(models.CommentModel, {
+            foreignKey: 'postId',
+            as: 'comments'
+        });
     }
 }
 
