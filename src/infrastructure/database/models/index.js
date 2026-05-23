@@ -1,19 +1,25 @@
 export { sequelize } from '../db.js';
 import { UserModel } from './user.model.js';
 import { PostModel } from './post.model.js';
+import { SupportGoalModel } from './support_goal.model.js';
+import { CommentModel } from './comment.model.js';
 
-UserModel.hasMany(PostModel, {
-    foreignKey: 'creatorId',
-    as: 'posts',
-    onDelete: 'CASCADE'
-});
+const models = {
+    UserModel,
+    PostModel,
+    SupportGoalModel,
+    CommentModel
+};
 
-PostModel.belongsTo(UserModel, {
-    foreignKey: 'creatorId',
-    as: 'creator'
+Object.values(models).forEach((model) => {
+    if (typeof model.associate === 'function') {
+        model.associate(models);
+    }
 });
 
 export {
     UserModel,
-    PostModel
+    PostModel,
+    SupportGoalModel,
+    CommentModel
 };
