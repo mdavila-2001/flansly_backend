@@ -13,7 +13,7 @@ export class FollowerRepository extends FollowerRepositoryPort {
                 where: { id: 1 },
                 defaults: {
                     name: 'flan',
-                    price: 10.00
+                    price: 10
                 }
             });
             return Number(supportType.price);
