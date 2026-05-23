@@ -1,4 +1,4 @@
-import { BusinessRuleError } from "../errors/BusinessRuleError";
+import { BusinessRuleError } from "../errors/BusinessRuleError.js";
 
 export class User {
     constructor({
@@ -9,8 +9,8 @@ export class User {
         displayName,
         role,
         profileImageUrl = null,
-        bannerImageUrl = null, 
-        createdAt, 
+        bannerImageUrl = null,
+        createdAt,
         updatedAt,
         deletedAt
     }) {
