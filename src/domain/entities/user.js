@@ -1,4 +1,5 @@
-import { BusinessRuleError } from "../errors/BusinessRuleError.js";
+import { BusinessRuleError } from "../errors/business_rule.error.js";
+import { ROLES, ALL_ROLES } from "../constants/roles.js";
 
 export class User {
     constructor({
@@ -12,7 +13,8 @@ export class User {
         bannerImageUrl = null,
         createdAt,
         updatedAt,
-        deletedAt
+        deletedAt,
+        skipPasswordValidation = false
     }) {
         this.id = id;
         this.username = username;
@@ -25,6 +27,7 @@ export class User {
         this.createdAt = createdAt || new Date();
         this.updatedAt = updatedAt || new Date();
         this.deletedAt = deletedAt || null;
+        this.skipPasswordValidation = skipPasswordValidation;
 
         this.validate();
     }
@@ -34,11 +37,11 @@ export class User {
             throw new BusinessRuleError('El nombre de usuario debe tener al menos 3 caracteres.');
         }
 
-        if (!this.email || !this.email.includes('@')) {
+        if (!this.email?.includes('@')) {
             throw new BusinessRuleError('El formato del correo electrónico no es válido.');
         }
 
-        if (!this.password) {
+        if (!this.skipPasswordValidation && !this.password) {
             throw new BusinessRuleError('La contraseña es obligatoria.');
         }
 
@@ -46,17 +49,17 @@ export class User {
             throw new BusinessRuleError('El nombre público a mostrar es obligatorio.');
         }
 
-        if (!['creator', 'follower'].includes(this.role)) {
-            throw new BusinessRuleError('Rol inválido. Un usuario solo puede ser "creator" o "follower".');
+        if (!ALL_ROLES.includes(this.role)) {
+            throw new BusinessRuleError(`Rol inválido. Un usuario solo puede ser: ${ALL_ROLES.join(', ')}.`);
         }
     }
 
     isCreator() {
-        return this.role === 'creator';
+        return this.role === ROLES.CREATOR;
     }
 
     isFollower() {
-        return this.role === 'follower';
+        return this.role === ROLES.FOLLOWER;
     }
 
     updateProfileImages(profileUrl, bannerUrl) {
