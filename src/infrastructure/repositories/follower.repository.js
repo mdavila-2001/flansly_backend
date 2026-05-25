@@ -289,4 +289,67 @@ export class FollowerRepository extends FollowerRepositoryPort {
             posts
         };
     }
+
+    async getDonationsByFollowerAndFilters(followerId, startDate, endDate, creatorName) {
+        const where = { followerId };
+
+        if ((startDate && startDate.trim() !== "") || (endDate && endDate.trim() !== "")) {
+            where.createdAt = {};
+            if (startDate && startDate.trim() !== "") {
+                const start = new Date(startDate);
+                if (!Number.isNaN(start.getTime())) {
+                    where.createdAt[Op.gte] = start;
+                }
+            }
+            if (endDate && endDate.trim() !== "") {
+                const end = new Date(endDate);
+                if (!Number.isNaN(end.getTime())) {
+                    end.setHours(23, 59, 59, 999);
+                    where.createdAt[Op.lte] = end;
+                }
+            }
+        }
+
+        const include = [
+            {
+                model: UserModel,
+                as: 'creator',
+                attributes: ['id', 'username', 'displayName', 'profileImageUrl'],
+                where: creatorName && creatorName.trim() !== "" ? {
+                    [Op.or]: [
+                        { displayName: { [Op.iLike]: `%${creatorName}%` } },
+                        { username: { [Op.iLike]: `%${creatorName}%` } }
+                    ]
+                } : undefined,
+                required: creatorName && creatorName.trim() !== "" ? true : false
+            },
+            {
+                model: SupportTypeModel,
+                as: 'supportType',
+                attributes: ['id', 'name']
+            }
+        ];
+
+        const records = await DonationModel.findAll({
+            where,
+            include,
+            order: [['createdAt', 'DESC']]
+        });
+
+        return records.map((record) => {
+            const raw = record.toJSON();
+            const donationEntity = new Donation({
+                id: raw.id,
+                followerId: raw.followerId,
+                creatorId: raw.creatorId,
+                supportTypeId: raw.supportTypeId,
+                quantity: raw.quantity,
+                totalAmount: Number(raw.totalAmount),
+                createdAt: raw.createdAt
+            });
+            donationEntity.creator = raw.creator;
+            donationEntity.supportType = raw.supportType;
+            return donationEntity;
+        });
+    }
 }

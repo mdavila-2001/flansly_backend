@@ -22,6 +22,7 @@ import { CreateFollowerComment } from '../application/use_cases/follower/create_
 import { ToggleFavoriteCreator } from '../application/use_cases/follower/toggle_favorite_creator.js';
 import { GetAllCreators } from '../application/use_cases/follower/get_all_creators.js';
 import { GetCreatorProfile } from '../application/use_cases/follower/get_creator_profile.js';
+import { GetFollowerHistory } from '../application/use_cases/follower/get_follower_history.js';
 
 const userRepository = new UserRepository();
 const postRepository = new PostRepository();
@@ -48,6 +49,7 @@ export const useCases = Object.freeze({
     toggleFavoriteCreator: new ToggleFavoriteCreator(followerRepository, userRepository),
     getAllCreators: new GetAllCreators(followerRepository),
     getCreatorProfile: new GetCreatorProfile(followerRepository),
+    getFollowerHistory: new GetFollowerHistory(followerRepository),
 });
 
 export { tokenService };

@@ -8,3 +8,9 @@ export const donateSchema = Joi.object({
 export const commentSchema = Joi.object({
     content: Joi.string().min(1).max(500).required()
 });
+
+export const historyQuerySchema = Joi.object({
+    startDate: Joi.string().isoDate().optional().allow(null, ''),
+    endDate: Joi.string().isoDate().optional().allow(null, ''),
+    creatorName: Joi.string().optional().allow(null, '')
+});

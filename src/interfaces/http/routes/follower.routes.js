@@ -3,11 +3,16 @@ import { FollowerController } from '../controllers/follower.controller.js';
 import { isAuth } from '../middleware/is_auth.js';
 import { checkRole } from '../middleware/check_role.js';
 import { validateSchema } from '../middleware/validate.js';
-import { donateSchema, commentSchema } from '../validation/follower.validation.js';
+import { donateSchema, commentSchema, historyQuerySchema } from '../validation/follower.validation.js';
 
 const router = Router();
 
 router.use(isAuth, checkRole(['follower']));
+
+router.get('/history',
+    validateSchema(historyQuerySchema, 'query'),
+    FollowerController.getHistory
+);
 
 router.post('/donate',
     validateSchema(donateSchema),
