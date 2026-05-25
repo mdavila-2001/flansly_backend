@@ -30,7 +30,7 @@ export const testConnection = async () => {
     try {
         await sequelize.authenticate();
         console.log('Conexión a NeonDB establecida con éxito.');
-        await sequelize.sync({ alter: true });
+        await sequelize.sync();
         console.log('Modelos de la base de datos sincronizados con éxito.');
     } catch (error) {
         console.error('Error conectando a la base de datos:', error);
