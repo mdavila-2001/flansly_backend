@@ -45,4 +45,22 @@ export class FollowerController {
             next(error);
         }
     }
+
+    static async getAllCreators(req, res, next) {
+        try {
+            const creators = await useCases.getAllCreators.execute(req.user.id);
+            return res.status(200).json(creators);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    static async getCreatorProfile(req, res, next) {
+        try {
+            const profile = await useCases.getCreatorProfile.execute(req.user.id, req.params.id);
+            return res.status(200).json(profile);
+        } catch (error) {
+            next(error);
+        }
+    }
 }

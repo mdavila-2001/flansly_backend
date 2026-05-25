@@ -17,6 +17,9 @@ router.post('/donate',
 
 router.get('/feed', FollowerController.feed);
 
+router.get('/creators', FollowerController.getAllCreators);
+router.get('/creators/:id', FollowerController.getCreatorProfile);
+
 router.post('/posts/:id/comments',
     validateSchema(commentSchema),
     FollowerController.comment

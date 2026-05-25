@@ -23,7 +23,8 @@ SupportTypeModel.init({
     },
     price: {
         type: DataTypes.DECIMAL(10, 2),
-        allowNull: false
+        allowNull: false,
+        field: 'base_price' // Obliga a Sequelize a usar este nombre exacto en SQL
     }
 }, {
     sequelize,

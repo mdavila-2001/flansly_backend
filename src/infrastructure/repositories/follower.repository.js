@@ -1,5 +1,5 @@
 import { Op } from 'sequelize';
-import { sequelize, SupportTypeModel, DonationModel, FollowModel, FavoriteModel, PostModel, UserModel, CommentModel } from '../database/models/index.js';
+import { sequelize, SupportTypeModel, DonationModel, FollowModel, FavoriteModel, PostModel, UserModel, CommentModel, SupportGoalModel } from '../database/models/index.js';
 import { Donation } from '../../domain/entities/donation.js';
 import { Follow } from '../../domain/entities/follow.js';
 import { Favorite } from '../../domain/entities/favorite.js';
@@ -7,22 +7,22 @@ import { Post } from '../../domain/entities/post.js';
 import { FollowerRepositoryPort } from '../../application/ports/follower.repository.port.js';
 
 export class FollowerRepository extends FollowerRepositoryPort {
-    async findSupportTypePriceById(id) {
-        if (id === 1) {
-            const [supportType] = await SupportTypeModel.findOrCreate({
-                where: { id: 1 },
-                defaults: {
-                    name: 'flan',
-                    price: 10
-                }
-            });
-            return Number(supportType.price);
-        }
+     async findSupportTypePriceById(id) {
+         if (id === 1) {
+             const [supportType] = await SupportTypeModel.findOrCreate({
+                 where: { id: 1 },
+                 defaults: {
+                     name: 'flan',
+                     price: 10 
+                 }
+             });
+             return Number(supportType.price);
+         }
 
-        const supportType = await SupportTypeModel.findByPk(id);
-        if (!supportType) return null;
-        return Number(supportType.price);
-    }
+         const supportType = await SupportTypeModel.findByPk(id);
+         if (!supportType) return null;
+         return Number(supportType.price);
+     }
 
     async saveDonation(donationEntity) {
         const created = await DonationModel.create({
@@ -190,5 +190,86 @@ export class FollowerRepository extends FollowerRepositoryPort {
                 createdAt: raw.createdAt
             });
         });
+    }
+
+    async getAllCreators(followerId) {
+        const creators = await UserModel.findAll({
+            where: { role: 'creator' },
+            attributes: ['id', 'username', 'displayName', 'profileImageUrl', 'bannerImageUrl']
+        });
+
+        const favorites = await FavoriteModel.findAll({
+            where: { followerId }
+        });
+        const favoriteCreatorIds = new Set(favorites.map(f => f.creatorId));
+
+        return creators.map(c => {
+            const raw = c.toJSON();
+            return {
+                ...raw,
+                isFavorite: favoriteCreatorIds.has(raw.id)
+            };
+        });
+    }
+
+    async getCreatorProfile(followerId, creatorId) {
+        const creatorRecord = await UserModel.findOne({
+            where: { id: creatorId, role: 'creator' },
+            attributes: ['id', 'username', 'displayName', 'profileImageUrl', 'bannerImageUrl']
+        });
+        if (!creatorRecord) return null;
+
+        const creator = creatorRecord.toJSON();
+
+        // Verificar si es favorito
+        const favorite = await FavoriteModel.findOne({
+            where: { followerId, creatorId }
+        });
+        creator.isFavorite = favorite !== null;
+
+        // Meta de apoyo activa
+        const goalRecord = await SupportGoalModel.findOne({
+            where: { creatorId }
+        });
+        const supportGoal = goalRecord ? goalRecord.toJSON() : null;
+
+        // Verificar si ha donado
+        const donation = await DonationModel.findOne({
+            where: { followerId, creatorId }
+        });
+        const hasDonated = donation !== null;
+
+        // Publicaciones con comentarios
+        const postRecords = await PostModel.findAll({
+            where: { creatorId },
+            include: [
+                {
+                    model: UserModel,
+                    as: 'creator',
+                    attributes: ['id', 'username', 'displayName', 'profileImageUrl']
+                },
+                {
+                    model: CommentModel,
+                    as: 'comments',
+                    include: [
+                        {
+                            model: UserModel,
+                            as: 'follower',
+                            attributes: ['id', 'username', 'displayName']
+                        }
+                    ]
+                }
+            ],
+            order: [['createdAt', 'DESC']]
+        });
+
+        const posts = postRecords.map(p => p.toJSON());
+
+        return {
+            creator,
+            supportGoal,
+            hasDonated,
+            posts
+        };
     }
 }
