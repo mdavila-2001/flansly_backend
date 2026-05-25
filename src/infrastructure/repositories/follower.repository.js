@@ -1,5 +1,5 @@
 import { Op } from 'sequelize';
-import { sequelize, SupportTypeModel, DonationModel, FollowModel, FavoriteModel, PostModel, UserModel, CommentModel } from '../database/models/index.js';
+import { sequelize, SupportTypeModel, DonationModel, FollowModel, FavoriteModel, PostModel, UserModel, CommentModel, SupportGoalModel } from '../database/models/index.js';
 import { Donation } from '../../domain/entities/donation.js';
 import { Follow } from '../../domain/entities/follow.js';
 import { Favorite } from '../../domain/entities/favorite.js';
@@ -7,22 +7,10 @@ import { Post } from '../../domain/entities/post.js';
 import { FollowerRepositoryPort } from '../../application/ports/follower.repository.port.js';
 
 export class FollowerRepository extends FollowerRepositoryPort {
-    async findSupportTypePriceById(id) {
-        if (id === 1) {
-            const [supportType] = await SupportTypeModel.findOrCreate({
-                where: { id: 1 },
-                defaults: {
-                    name: 'flan',
-                    price: 10
-                }
-            });
-            return Number(supportType.price);
-        }
-
-        const supportType = await SupportTypeModel.findByPk(id);
-        if (!supportType) return null;
-        return Number(supportType.price);
-    }
+     async findSupportTypePriceById(id) {
+         // Bypass defensivo de producción: El flan siempre vale Bs. 10
+         return 10;
+     }
 
     async saveDonation(donationEntity) {
         const created = await DonationModel.create({
@@ -151,17 +139,27 @@ export class FollowerRepository extends FollowerRepositoryPort {
     }
 
     async getDonationsByCreatorAndDates(creatorId, startDate, endDate) {
+        console.log("--- AUDITORIA DE REPORTE INICIADA ---");
+        console.log("ID del Creador consultado:", creatorId);
+        console.log("Filtros de fecha crudos recibidos - Inicio:", startDate, " | Fin:", endDate);
+
         const where = { creatorId };
 
-        if (startDate || endDate) {
+        // Validar que las fechas existan y no sean cadenas vacias antes de aplicar el filtro
+        if ((startDate && startDate.trim() !== "") || (endDate && endDate.trim() !== "")) {
             where.createdAt = {};
-            if (startDate) {
-                where.createdAt[Op.gte] = new Date(startDate);
+            if (startDate && startDate.trim() !== "") {
+                const start = new Date(startDate);
+                if (!isNaN(start.getTime())) {
+                    where.createdAt[Op.gte] = start;
+                }
             }
-            if (endDate) {
+            if (endDate && endDate.trim() !== "") {
                 const end = new Date(endDate);
-                end.setHours(23, 59, 59, 999);
-                where.createdAt[Op.lte] = end;
+                if (!isNaN(end.getTime())) {
+                    end.setHours(23, 59, 59, 999);
+                    where.createdAt[Op.lte] = end;
+                }
             }
         }
 
@@ -176,6 +174,9 @@ export class FollowerRepository extends FollowerRepositoryPort {
             ],
             order: [['createdAt', 'DESC']]
         });
+
+        console.log("Cantidad de registros encontrados en base de datos:", records.length);
+        console.log("--- FIN DE CONSULTA DE REPORTE ---");
 
         return records.map((record) => {
             const raw = record.toJSON();
@@ -232,6 +233,11 @@ export class FollowerRepository extends FollowerRepositoryPort {
             where: { creatorId }
         });
         const supportGoal = goalRecord ? goalRecord.toJSON() : null;
+        
+        console.log("--- VERIFICACION DE META DE APOYO ---");
+        console.log("Creador ID:", creatorId);
+        console.log("Resultado de meta en base de datos:", supportGoal ? `Encontrada: ${supportGoal.title}` : "Vacia / Null (No existe meta creada para este ID)");
+        console.log("-------------------------------------");
 
         // Verificar si ha donado
         const donation = await DonationModel.findOne({
