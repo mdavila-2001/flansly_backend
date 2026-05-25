@@ -28,7 +28,6 @@ export class Post {
             throw new BusinessRuleError('El post debe pertenecer obligatoriamente a un creador.');
         }
 
-        // Regla de Negocio: Un post no puede estar vacío
         const hasText = this.contentText && this.contentText.trim().length > 0;
         const hasImage = this.imageUrl && this.imageUrl.trim().length > 0;
 

@@ -24,7 +24,7 @@ SupportTypeModel.init({
     price: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
-        field: 'fixed_amount' // ◄── Sincronización con la columna real de NeonDB
+        field: 'fixed_amount'
     }
 }, {
     sequelize,

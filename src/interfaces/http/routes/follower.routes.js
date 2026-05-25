@@ -7,7 +7,6 @@ import { donateSchema, commentSchema } from '../validation/follower.validation.j
 
 const router = Router();
 
-// Seguridad global: solo seguidores autenticados
 router.use(isAuth, checkRole(['follower']));
 
 router.post('/donate',

@@ -100,7 +100,6 @@ export class FollowerRepository extends FollowerRepositoryPort {
     }
 
     async getDonatedCreatorsPosts(followerId) {
-        // 1. Obtener los IDs de creadores a los que se ha donado
         const donations = await DonationModel.findAll({
             attributes: [[sequelize.fn('DISTINCT', sequelize.col('creator_id')), 'creatorId']],
             where: { followerId }
@@ -109,7 +108,6 @@ export class FollowerRepository extends FollowerRepositoryPort {
         const creatorIds = donations.map(d => d.get('creatorId')).filter(Boolean);
         if (creatorIds.length === 0) return [];
 
-        // 2. Traer posts de esos creadores
         const records = await PostModel.findAll({
             where: { creatorId: creatorIds },
             include: [
@@ -144,7 +142,6 @@ export class FollowerRepository extends FollowerRepositoryPort {
                 createdAt: raw.createdAt,
                 updatedAt: raw.updatedAt
             });
-            // Adjuntar el creador para facilitar el despliegue en la interfaz HTTP
             postEntity.creator = raw.creator;
             return postEntity;
         });
@@ -242,7 +239,6 @@ export class FollowerRepository extends FollowerRepositoryPort {
 
         const creator = creatorRecord.toJSON();
 
-        // Verificar si es favorito
         const favorite = await FavoriteModel.findOne({
             where: { followerId, creatorId }
         });
@@ -261,7 +257,6 @@ export class FollowerRepository extends FollowerRepositoryPort {
         });
         const hasDonated = donation !== null;
 
-        // Publicaciones con comentarios
         const postRecords = await PostModel.findAll({
             where: { creatorId },
             include: [
