@@ -15,18 +15,15 @@ export class FollowModel extends Model {
 }
 
 FollowModel.init({
-    id: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
-        primaryKey: true
-    },
     followerId: {
         type: DataTypes.UUID,
-        allowNull: false
+        allowNull: false,
+        primaryKey: true
     },
     creatorId: {
         type: DataTypes.UUID,
-        allowNull: false
+        allowNull: false,
+        primaryKey: true
     }
 }, {
     sequelize,

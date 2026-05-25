@@ -3,7 +3,7 @@ export class UpdateSupportGoal {
         this.goalRepository = goalRepository;
     }
 
-    async execute(creatorId, title, description) {
-        return await this.goalRepository.upsert(creatorId, title, description);
+    async execute(creatorId, title, description, targetFlans) {
+        return await this.goalRepository.upsert(creatorId, title, description, targetFlans);
     }
 }

@@ -5,7 +5,7 @@ export class PostController {
         try {
             let imageUrl = null;
             if (req.file) {
-                imageUrl = `/uploads/${req.file.filename}`;
+                imageUrl = `/uploads/post/${req.file.filename}`;
             }
 
             const post = await useCases.createPost.execute(req.user.id, req.body.contentText, imageUrl);

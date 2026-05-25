@@ -27,6 +27,11 @@ SupportGoalModel.init({
     description: {
         type: DataTypes.TEXT,
         allowNull: false
+    },
+    targetFlans: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 50
     }
 }, {
     sequelize,

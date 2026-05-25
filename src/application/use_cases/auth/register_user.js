@@ -20,12 +20,17 @@ export class RegisterUser {
 
         const hashedPassword = await this.hashService.hash(data.password);
 
+        // Generar un avatar por defecto estético y dinámico (estilo fun-emoji) si no se subió una imagen
+        const profileImageUrl = data.profileImageUrl || `https://api.dicebear.com/7.x/fun-emoji/svg?seed=${encodeURIComponent(data.username)}`;
+
         const userEntity = new User({
             username: data.username,
             email: data.email,
             password: hashedPassword,
             displayName: data.displayName,
-            role: data.role
+            role: data.role,
+            profileImageUrl: profileImageUrl,
+            bannerImageUrl: data.bannerImageUrl
         });
 
         const savedUser = await this.userRepository.save(userEntity);

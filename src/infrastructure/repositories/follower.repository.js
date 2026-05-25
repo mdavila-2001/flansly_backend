@@ -1,5 +1,5 @@
 import { Op } from 'sequelize';
-import { sequelize, SupportTypeModel, DonationModel, FollowModel, FavoriteModel, PostModel, UserModel, CommentModel } from '../database/models/index.js';
+import { sequelize, SupportTypeModel, DonationModel, FollowModel, FavoriteModel, PostModel, UserModel, CommentModel, SupportGoalModel } from '../database/models/index.js';
 import { Donation } from '../../domain/entities/donation.js';
 import { Follow } from '../../domain/entities/follow.js';
 import { Favorite } from '../../domain/entities/favorite.js';
@@ -212,6 +212,15 @@ export class FollowerRepository extends FollowerRepositoryPort {
         });
     }
 
+    async getCurrentFlans(creatorId) {
+        return await DonationModel.sum('quantity', {
+            where: {
+                creatorId,
+                supportTypeId: 1
+            }
+        }) || 0;
+    }
+
     async getCreatorProfile(followerId, creatorId) {
         const creatorRecord = await UserModel.findOne({
             where: { id: creatorId, role: 'creator' },
@@ -232,6 +241,9 @@ export class FollowerRepository extends FollowerRepositoryPort {
             where: { creatorId }
         });
         const supportGoal = goalRecord ? goalRecord.toJSON() : null;
+        if (supportGoal) {
+            supportGoal.currentFlans = await this.getCurrentFlans(creatorId);
+        }
 
         // Verificar si ha donado
         const donation = await DonationModel.findOne({

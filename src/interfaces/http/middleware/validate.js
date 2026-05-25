@@ -13,7 +13,12 @@ export const validateSchema = (schema, source = 'body') => {
         }
 
         if (source === 'query') {
-            req.query = value;
+            Object.defineProperty(req, 'query', {
+                value,
+                writable: true,
+                configurable: true,
+                enumerable: true
+            });
         } else {
             req.body = value;
         }
