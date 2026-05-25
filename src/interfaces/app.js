@@ -26,10 +26,8 @@ app.get('/api/health', (req, res) => {
     res.status(200).json({ status: 'OK', message: 'El horno de Flansly está encendido 🔥' });
 });
 
-// Rutas del sistema
 app.use('/api', apiRoutes);
 
-// Manejo centralizado de errores (debe ir al final, después de todas las rutas)
 app.use(errorHandler);
 
 app.listen(PORT, async () => {

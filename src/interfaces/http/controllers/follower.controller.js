@@ -63,4 +63,13 @@ export class FollowerController {
             next(error);
         }
     }
+
+    static async getHistory(req, res, next) {
+        try {
+            const history = await useCases.getFollowerHistory.execute(req.user.id, req.query);
+            return res.status(200).json(history);
+        } catch (error) {
+            next(error);
+        }
+    }
 }

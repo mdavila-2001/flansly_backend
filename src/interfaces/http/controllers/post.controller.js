@@ -5,7 +5,7 @@ export class PostController {
         try {
             let imageUrl = null;
             if (req.file) {
-                imageUrl = `/uploads/${req.file.filename}`;
+                imageUrl = `/uploads/posts/${req.file.filename}`;
             }
 
             const textContent = req.body?.contentText || null;

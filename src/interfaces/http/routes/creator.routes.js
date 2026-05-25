@@ -17,6 +17,8 @@ router.put('/profile',
     CreatorController.updateProfile
 );
 
+router.get('/goal', CreatorController.getGoal);
+
 router.put('/goal',
     validateSchema(goalSchema),
     CreatorController.updateGoal

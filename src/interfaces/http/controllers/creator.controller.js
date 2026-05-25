@@ -8,10 +8,10 @@ export class CreatorController {
 
             if (req.files) {
                 if (req.files.avatar?.[0]) {
-                    profileImageUrl = `/uploads/${req.files.avatar[0].filename}`;
+                    profileImageUrl = `/uploads/avatar/${req.files.avatar[0].filename}`;
                 }
                 if (req.files.banner?.[0]) {
-                    bannerImageUrl = `/uploads/${req.files.banner[0].filename}`;
+                    bannerImageUrl = `/uploads/banner/${req.files.banner[0].filename}`;
                 }
             }
 
@@ -35,8 +35,22 @@ export class CreatorController {
 
     static async updateGoal(req, res, next) {
         try {
-            const result = await useCases.updateSupportGoal.execute(req.user.id, req.body.title, req.body.description);
+            const result = await useCases.updateSupportGoal.execute(
+                req.user.id,
+                req.body.title,
+                req.body.description,
+                req.body.targetFlans
+            );
 
+            return res.status(200).json(result);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    static async getGoal(req, res, next) {
+        try {
+            const result = await useCases.getSupportGoal.execute(req.user.id);
             return res.status(200).json(result);
         } catch (error) {
             next(error);

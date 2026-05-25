@@ -7,10 +7,22 @@ import { Post } from '../../domain/entities/post.js';
 import { FollowerRepositoryPort } from '../../application/ports/follower.repository.port.js';
 
 export class FollowerRepository extends FollowerRepositoryPort {
-     async findSupportTypePriceById(id) {
-         // Bypass defensivo de producción: El flan siempre vale Bs. 10
-         return 10;
-     }
+    async findSupportTypePriceById(id) {
+        if (id === 1) {
+            const [supportType] = await SupportTypeModel.findOrCreate({
+                where: { id: 1 },
+                defaults: {
+                    name: 'flan',
+                    price: 10
+                }
+            });
+            return Number(supportType.price);
+        }
+
+        const supportType = await SupportTypeModel.findByPk(id);
+        if (!supportType) return null;
+        return Number(supportType.price);
+    }
 
     async saveDonation(donationEntity) {
         const created = await DonationModel.create({
@@ -88,7 +100,6 @@ export class FollowerRepository extends FollowerRepositoryPort {
     }
 
     async getDonatedCreatorsPosts(followerId) {
-        // 1. Obtener los IDs de creadores a los que se ha donado
         const donations = await DonationModel.findAll({
             attributes: [[sequelize.fn('DISTINCT', sequelize.col('creator_id')), 'creatorId']],
             where: { followerId }
@@ -97,7 +108,6 @@ export class FollowerRepository extends FollowerRepositoryPort {
         const creatorIds = donations.map(d => d.get('creatorId')).filter(Boolean);
         if (creatorIds.length === 0) return [];
 
-        // 2. Traer posts de esos creadores
         const records = await PostModel.findAll({
             where: { creatorId: creatorIds },
             include: [
@@ -132,7 +142,6 @@ export class FollowerRepository extends FollowerRepositoryPort {
                 createdAt: raw.createdAt,
                 updatedAt: raw.updatedAt
             });
-            // Adjuntar el creador para facilitar el despliegue en la interfaz HTTP
             postEntity.creator = raw.creator;
             return postEntity;
         });
@@ -145,18 +154,17 @@ export class FollowerRepository extends FollowerRepositoryPort {
 
         const where = { creatorId };
 
-        // Validar que las fechas existan y no sean cadenas vacias antes de aplicar el filtro
         if ((startDate && startDate.trim() !== "") || (endDate && endDate.trim() !== "")) {
             where.createdAt = {};
             if (startDate && startDate.trim() !== "") {
                 const start = new Date(startDate);
-                if (!isNaN(start.getTime())) {
+                if (!Number.isNaN(start.getTime())) {
                     where.createdAt[Op.gte] = start;
                 }
             }
             if (endDate && endDate.trim() !== "") {
                 const end = new Date(endDate);
-                if (!isNaN(end.getTime())) {
+                if (!Number.isNaN(end.getTime())) {
                     end.setHours(23, 59, 59, 999);
                     where.createdAt[Op.lte] = end;
                 }
@@ -213,6 +221,15 @@ export class FollowerRepository extends FollowerRepositoryPort {
         });
     }
 
+    async getCurrentFlans(creatorId) {
+        return await DonationModel.sum('quantity', {
+            where: {
+                creatorId,
+                supportTypeId: 1
+            }
+        }) || 0;
+    }
+
     async getCreatorProfile(followerId, creatorId) {
         const creatorRecord = await UserModel.findOne({
             where: { id: creatorId, role: 'creator' },
@@ -222,30 +239,24 @@ export class FollowerRepository extends FollowerRepositoryPort {
 
         const creator = creatorRecord.toJSON();
 
-        // Verificar si es favorito
         const favorite = await FavoriteModel.findOne({
             where: { followerId, creatorId }
         });
         creator.isFavorite = favorite !== null;
 
-        // Meta de apoyo activa
         const goalRecord = await SupportGoalModel.findOne({
             where: { creatorId }
         });
         const supportGoal = goalRecord ? goalRecord.toJSON() : null;
-        
-        console.log("--- VERIFICACION DE META DE APOYO ---");
-        console.log("Creador ID:", creatorId);
-        console.log("Resultado de meta en base de datos:", supportGoal ? `Encontrada: ${supportGoal.title}` : "Vacia / Null (No existe meta creada para este ID)");
-        console.log("-------------------------------------");
+        if (supportGoal) {
+            supportGoal.currentFlans = await this.getCurrentFlans(creatorId);
+        }
 
-        // Verificar si ha donado
         const donation = await DonationModel.findOne({
             where: { followerId, creatorId }
         });
         const hasDonated = donation !== null;
 
-        // Publicaciones con comentarios
         const postRecords = await PostModel.findAll({
             where: { creatorId },
             include: [
@@ -277,5 +288,68 @@ export class FollowerRepository extends FollowerRepositoryPort {
             hasDonated,
             posts
         };
+    }
+
+    async getDonationsByFollowerAndFilters(followerId, startDate, endDate, creatorName) {
+        const where = { followerId };
+
+        if ((startDate && startDate.trim() !== "") || (endDate && endDate.trim() !== "")) {
+            where.createdAt = {};
+            if (startDate && startDate.trim() !== "") {
+                const start = new Date(startDate);
+                if (!Number.isNaN(start.getTime())) {
+                    where.createdAt[Op.gte] = start;
+                }
+            }
+            if (endDate && endDate.trim() !== "") {
+                const end = new Date(endDate);
+                if (!Number.isNaN(end.getTime())) {
+                    end.setHours(23, 59, 59, 999);
+                    where.createdAt[Op.lte] = end;
+                }
+            }
+        }
+
+        const include = [
+            {
+                model: UserModel,
+                as: 'creator',
+                attributes: ['id', 'username', 'displayName', 'profileImageUrl'],
+                where: creatorName && creatorName.trim() !== "" ? {
+                    [Op.or]: [
+                        { displayName: { [Op.iLike]: `%${creatorName}%` } },
+                        { username: { [Op.iLike]: `%${creatorName}%` } }
+                    ]
+                } : undefined,
+                required: creatorName && creatorName.trim() !== "" ? true : false
+            },
+            {
+                model: SupportTypeModel,
+                as: 'supportType',
+                attributes: ['id', 'name']
+            }
+        ];
+
+        const records = await DonationModel.findAll({
+            where,
+            include,
+            order: [['createdAt', 'DESC']]
+        });
+
+        return records.map((record) => {
+            const raw = record.toJSON();
+            const donationEntity = new Donation({
+                id: raw.id,
+                followerId: raw.followerId,
+                creatorId: raw.creatorId,
+                supportTypeId: raw.supportTypeId,
+                quantity: raw.quantity,
+                totalAmount: Number(raw.totalAmount),
+                createdAt: raw.createdAt
+            });
+            donationEntity.creator = raw.creator;
+            donationEntity.supportType = raw.supportType;
+            return donationEntity;
+        });
     }
 }

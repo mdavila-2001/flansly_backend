@@ -46,4 +46,8 @@ export class FollowerRepositoryPort {
     async getCreatorProfile(followerId, creatorId) {
         throw new Error('Not implemented');
     }
+
+    async getDonationsByFollowerAndFilters(followerId, startDate, endDate, creatorName) {
+        throw new Error('Not implemented');
+    }
 }

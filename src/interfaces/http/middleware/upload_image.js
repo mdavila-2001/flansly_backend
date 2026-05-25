@@ -16,7 +16,22 @@ if (!fs.existsSync(UPLOADS_FOLDER)) {
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, UPLOADS_FOLDER);
+        let subfolder = 'post';
+        if (file.fieldname === 'avatar') {
+            subfolder = 'avatar';
+        } else if (file.fieldname === 'banner') {
+            subfolder = 'banner';
+        } else if (file.fieldname === 'image') {
+            subfolder = 'posts';
+        }
+
+        const dest = path.join(UPLOADS_FOLDER, subfolder);
+
+        if (!fs.existsSync(dest)) {
+            fs.mkdirSync(dest, { recursive: true });
+        }
+
+        cb(null, dest);
     },
     filename: (req, file, cb) => {
         const ext = path.extname(file.originalname).toLowerCase();
