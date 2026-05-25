@@ -191,4 +191,85 @@ export class FollowerRepository extends FollowerRepositoryPort {
             });
         });
     }
+
+    async getAllCreators(followerId) {
+        const creators = await UserModel.findAll({
+            where: { role: 'creator' },
+            attributes: ['id', 'username', 'displayName', 'profileImageUrl', 'bannerImageUrl']
+        });
+
+        const favorites = await FavoriteModel.findAll({
+            where: { followerId }
+        });
+        const favoriteCreatorIds = new Set(favorites.map(f => f.creatorId));
+
+        return creators.map(c => {
+            const raw = c.toJSON();
+            return {
+                ...raw,
+                isFavorite: favoriteCreatorIds.has(raw.id)
+            };
+        });
+    }
+
+    async getCreatorProfile(followerId, creatorId) {
+        const creatorRecord = await UserModel.findOne({
+            where: { id: creatorId, role: 'creator' },
+            attributes: ['id', 'username', 'displayName', 'profileImageUrl', 'bannerImageUrl']
+        });
+        if (!creatorRecord) return null;
+
+        const creator = creatorRecord.toJSON();
+
+        // Verificar si es favorito
+        const favorite = await FavoriteModel.findOne({
+            where: { followerId, creatorId }
+        });
+        creator.isFavorite = favorite !== null;
+
+        // Meta de apoyo activa
+        const goalRecord = await SupportGoalModel.findOne({
+            where: { creatorId }
+        });
+        const supportGoal = goalRecord ? goalRecord.toJSON() : null;
+
+        // Verificar si ha donado
+        const donation = await DonationModel.findOne({
+            where: { followerId, creatorId }
+        });
+        const hasDonated = donation !== null;
+
+        // Publicaciones con comentarios
+        const postRecords = await PostModel.findAll({
+            where: { creatorId },
+            include: [
+                {
+                    model: UserModel,
+                    as: 'creator',
+                    attributes: ['id', 'username', 'displayName', 'profileImageUrl']
+                },
+                {
+                    model: CommentModel,
+                    as: 'comments',
+                    include: [
+                        {
+                            model: UserModel,
+                            as: 'follower',
+                            attributes: ['id', 'username', 'displayName']
+                        }
+                    ]
+                }
+            ],
+            order: [['createdAt', 'DESC']]
+        });
+
+        const posts = postRecords.map(p => p.toJSON());
+
+        return {
+            creator,
+            supportGoal,
+            hasDonated,
+            posts
+        };
+    }
 }
