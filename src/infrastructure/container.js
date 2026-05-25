@@ -18,6 +18,8 @@ import { DonateFlans } from '../application/use_cases/follower/donate_flans.js';
 import { GetFollowerFeed } from '../application/use_cases/follower/get_follower_feed.js';
 import { CreateFollowerComment } from '../application/use_cases/follower/create_follower_comment.js';
 import { ToggleFavoriteCreator } from '../application/use_cases/follower/toggle_favorite_creator.js';
+import { GetAllCreators } from '../application/use_cases/follower/get_all_creators.js';
+import { GetCreatorProfile } from '../application/use_cases/follower/get_creator_profile.js';
 
 const userRepository = new UserRepository();
 const postRepository = new PostRepository();
@@ -40,6 +42,8 @@ export const useCases = Object.freeze({
     getFollowerFeed: new GetFollowerFeed(followerRepository),
     createFollowerComment: new CreateFollowerComment(followerRepository, postRepository, commentRepository),
     toggleFavoriteCreator: new ToggleFavoriteCreator(followerRepository, userRepository),
+    getAllCreators: new GetAllCreators(followerRepository),
+    getCreatorProfile: new GetCreatorProfile(followerRepository),
 });
 
 export { tokenService };

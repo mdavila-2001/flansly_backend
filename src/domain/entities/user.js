@@ -33,7 +33,7 @@ export class User {
     }
 
     validate() {
-        if (!this.username?.length < 3) {
+        if (!this.username || this.username.length < 3) {
             throw new BusinessRuleError('El nombre de usuario debe tener al menos 3 caracteres.');
         }
 

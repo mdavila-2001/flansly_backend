@@ -38,4 +38,12 @@ export class FollowerRepositoryPort {
     async getDonationsByCreatorAndDates(creatorId, startDate, endDate) {
         throw new Error('Not implemented');
     }
+
+    async getAllCreators(followerId) {
+        throw new Error('Not implemented');
+    }
+
+    async getCreatorProfile(followerId, creatorId) {
+        throw new Error('Not implemented');
+    }
 }
