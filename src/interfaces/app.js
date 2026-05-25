@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { testConnection } from '../infrastructure/database/db.js';
+import { errorHandler } from './http/middleware/error_handler.js';
+import apiRoutes from './http/routes/index.js';
 
 dotenv.config();
 
@@ -23,6 +25,10 @@ app.use('/uploads', express.static(path.join(__dirname, '../infrastructure/uploa
 app.get('/api/health', (req, res) => {
     res.status(200).json({ status: 'OK', message: 'El horno de Flansly está encendido 🔥' });
 });
+
+app.use('/api', apiRoutes);
+
+app.use(errorHandler);
 
 app.listen(PORT, async () => {
     await testConnection();

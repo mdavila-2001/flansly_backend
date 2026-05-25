@@ -2,16 +2,36 @@ import multer from 'multer';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import crypto from 'node:crypto';
-import { BusinessRuleError } from '../../../domain/errors/BusinessRuleError.js';
+import fs from 'node:fs';
+import { ValidationError } from '../errors/validation.error.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const UPLOADS_FOLDER = path.join(__dirname, '../../../infrastructure/uploads');
 
+if (!fs.existsSync(UPLOADS_FOLDER)) {
+    fs.mkdirSync(UPLOADS_FOLDER, { recursive: true });
+}
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, UPLOADS_FOLDER);
+        let subfolder = 'post';
+        if (file.fieldname === 'avatar') {
+            subfolder = 'avatar';
+        } else if (file.fieldname === 'banner') {
+            subfolder = 'banner';
+        } else if (file.fieldname === 'image') {
+            subfolder = 'posts';
+        }
+
+        const dest = path.join(UPLOADS_FOLDER, subfolder);
+
+        if (!fs.existsSync(dest)) {
+            fs.mkdirSync(dest, { recursive: true });
+        }
+
+        cb(null, dest);
     },
     filename: (req, file, cb) => {
         const ext = path.extname(file.originalname).toLowerCase();
@@ -27,7 +47,7 @@ const securityFilter = (req, file, cb) => {
     if (allowedMimeTypes.includes(file.mimetype)) {
         cb(null, true);
     } else {
-        cb(new BusinessRuleError('Formato inválido. Solo se permiten ingredientes visuales (JPG, JPEG o PNG).'), false);
+        cb(new ValidationError('Formato inválido. Solo se permiten ingredientes visuales (JPG, JPEG o PNG).'), false);
     }
 };
 
