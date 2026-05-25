@@ -8,10 +8,12 @@ export class PostController {
                 imageUrl = `/uploads/posts/${req.file.filename}`;
             }
 
-            const post = await useCases.createPost.execute(req.user.id, req.body.contentText, imageUrl);
+            const textContent = req.body?.contentText || null;
+            const post = await useCases.createPost.execute(req.user.id, textContent, imageUrl);
 
             return res.status(201).json(post);
         } catch (error) {
+            console.error("❌ CRITICAL CRASH EN CREATE_POST:", error);
             next(error);
         }
     }

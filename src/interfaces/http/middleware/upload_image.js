@@ -10,6 +10,10 @@ const __dirname = path.dirname(__filename);
 
 const UPLOADS_FOLDER = path.join(__dirname, '../../../infrastructure/uploads');
 
+if (!fs.existsSync(UPLOADS_FOLDER)) {
+    fs.mkdirSync(UPLOADS_FOLDER, { recursive: true });
+}
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         let subfolder = 'post';

@@ -31,3 +31,5 @@ FavoriteModel.init({
     tableName: 'favorites',
     updatedAt: false
 });
+
+FavoriteModel.removeAttribute('id');

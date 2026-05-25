@@ -14,7 +14,7 @@ export const validateSchema = (schema, source = 'body') => {
 
         if (source === 'query') {
             Object.defineProperty(req, 'query', {
-                value,
+                value: value,
                 writable: true,
                 configurable: true,
                 enumerable: true

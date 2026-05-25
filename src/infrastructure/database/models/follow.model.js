@@ -31,3 +31,5 @@ FollowModel.init({
     tableName: 'follows',
     updatedAt: false
 });
+
+FollowModel.removeAttribute('id');
